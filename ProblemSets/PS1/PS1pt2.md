@@ -1,0 +1,15 @@
+# PS1
+## Joseph Denby
+## 4/16
+
+#### Part 2.
+[Grimmer, J. (2016). Measuring Representational Style in the House: The Tea Party, Obama, and Legislators' Changing Expressed Priorities.](http://stanford.edu/~jgrimmer/house.pdf)
+
+1. This paper aims to answer the following research question: How do elected federal legislators characterize their representation to constituents, and how do these characterizations change according to party changes and flucutations in electoral pressure? 
+2. This paper uses a collection of nearly 170,000 press releases from the House of Representatives. 
+3. This paper is largely atheoretical, as it instead represents a proof-of-concept attempt at applying novel computational techniques to a generally unanalyzed (at the time) dataset. However, the question it aims to drive at (which concerns how elected officials embody political representation) draws from prior work in political theory (e.g., Mayhew, 1974; Fenno, 1978).
+4. This paper is best characterized as a blend of an identification exercise and a descriptive study. First, it serves as a descriptive study because it stands as one of the initial attempts at capturing the content of House press releases through statistical topic modeling. The paper's primary goal is to assess a representative's general representational stance through the topics of their press releases over a five year span. Second, it serves as an identification exercise to determine whether major political shifts (such as the 2008 general election) precipitate shifts in communication style among representatives at individual and collective levels. This paper does not provide a watertight causal argument nor a method of prediction, but it does attempt to map this particular Congressional party control change to changes in overall party rhetoric.
+5. To answer the above question, the paper employed a handful of unsupervised statistical topic modeling methods. By doing so, the researcher could glean topic homogeneity within and across press releases at varying levels of granularity. Through this method, the researcher demonstrates that Republican legislators largely abandon a 'credit-claiming' style of characterization after the 2008 presidential election, instead opting for a more critical stance in response to the new Democratic government. However, while this trend is apparent from observing the entire collection of Republican releases, individual legislators are relatively stable in their characterizations over time.
+6. In order to strengthen the author's conclusions, I might offer the following two suggestions:
+    a. Expand this analysis to other sources of data. Representatives exercise their rhetoric through means beyond press releases (e.g., advertising materials, speeches on the Congressional floor, etc.); would these data sources corroborate this paper's findings?
+    b. For this paper, the researcher simply assigns certain fine-grained topics to coarser categories (including 'credit-claiming' and 'position-taking'); within the specific topics identified by these models, is there any noticeable shift in rhetoric after 2008?
