@@ -1,0 +1,124 @@
+---
+title: "PS2 pt 2"
+author: "Joseph Denby"
+date: "4/30/2018"
+output: html_document
+---
+
+```{r, message=FALSE}
+library(tidyverse)
+library(forcats)
+library(broom)
+library(modelr)
+library(stringr)
+library(car)
+library(plotly)
+library(haven)
+library(coefplot)
+
+options(digits = 3)
+theme_set(theme_minimal())
+```
+
+```{r}
+instant_effect <- function(model, mod_var){
+  # get interaction term name
+  int.name <- names(model$coefficients)[[which(str_detect(names(model$coefficients), ":"))]]
+  
+  marg_var <- str_split(int.name, ":")[[1]][[which(str_split(int.name, ":")[[1]] != mod_var)]]
+  
+  # store coefficients and covariance matrix
+  beta.hat <- coef(model)
+  cov <- vcov(model)
+  
+  # possible set of values for mod_var
+  if(class(model)[[1]] == "lm"){
+    z <- seq(min(model$model[[mod_var]]), max(model$model[[mod_var]]))
+  } else {
+    z <- seq(min(model$data[[mod_var]]), max(model$data[[mod_var]]))
+  }
+  
+  # calculate instantaneous effect
+  dy.dx <- beta.hat[[marg_var]] + beta.hat[[int.name]] * z
+  
+  # calculate standard errors for instantaeous effect
+  se.dy.dx <- sqrt(cov[marg_var, marg_var] +
+                     z^2 * cov[int.name, int.name] +
+                     2 * z * cov[marg_var, int.name])
+  
+  # combine into data frame
+  data_frame(z = z,
+             dy.dx = dy.dx,
+             se = se.dy.dx)
+}
+
+```
+
+
+```{r}
+biden <- read.csv('biden.csv') %>%
+  na.omit %>%
+  mutate(age = age - min(age)) # age now represents years above 18
+``` 
+First, I estimate the model as described in the assignment write-up:
+$$Y=\beta_0 + \beta_1 X_1 + \beta_2 X_2 + \beta_3X_1 X_2 $$
+where $Y$ is the thermometer, $X_1$ is age, and $X_2$ is education.
+```{r}
+biden_lm <- lm(biden ~ age * educ, data = biden)
+tidy(biden_lm)
+```
+The parameter estimates and standard errors are printed in the above results. The estimates for the quasi-parameters $\psi_1$ and $\psi_2$ (representing the marginal effects of age and education respectively) are computed below.
+```{r}
+coef(biden_lm)[["age"]] + coef(biden_lm)[["age:educ"]]
+```
+The estimate for $\psi_1$ is 0.624.
+
+```{r}
+coef(biden_lm)[["educ"]] + coef(biden_lm)[["age:educ"]]
+```
+The estimate for $\psi_2$ is 0.745.
+
+a.)
+To test whether age has a significant marginal effect, we run a hypothesis test on our estimate of the pseudo-parameter $\psi_1$:
+```{r}
+linearHypothesis(biden_lm, "age + age:educ")
+```
+The test yields a result that is strongly significant, indicating that age does indeed have an overall marginal effect on the thermometer values.
+```{r}
+instant_effect(biden_lm, "educ") %>%
+  ggplot(aes(z, dy.dx)) +
+  geom_line() +
+  geom_line(aes(y = dy.dx - 1.96 * se), linetype = 2) +
+  geom_line(aes(y = dy.dx + 1.96 * se), linetype = 2) +
+  geom_hline(yintercept = 0) +
+  labs(title = "Marginal effect of respondent age",
+       subtitle = "By respondent education",
+       x = "Respondent education (yrs)",
+       y = "Estimated marginal effect")
+```
+
+With the above line plot estimating the marginal effect of age by education, the results indicate age has a significantly positive marginal effect on thermometer values until about 12 years of education (i.e., a high-school degree). In general, a one year increase in respondent's age is associated with a .2 to .9 increase in Biden thermometer values, with the estimated effect decreasing with an increase in years of education.
+
+b.)
+To test whether education has a significant marginal effect, we run a hypothesis test on our estimate of the pseudo-parameter $\psi_2$:
+
+```{r}
+linearHypothesis(biden_lm, "educ + age:educ")
+```
+According to this hypothesis test, education does not appear to have a significant marginal effect across the entire sample.
+
+
+```{r}
+instant_effect(biden_lm, "age") %>%
+  ggplot(aes(z, dy.dx)) +
+  geom_line() +
+  geom_line(aes(y = dy.dx - 1.96 * se), linetype = 2) +
+  geom_line(aes(y = dy.dx + 1.96 * se), linetype = 2) +
+  geom_hline(yintercept = 0) +
+  labs(title = "Marginal effect of respondent education",
+       subtitle = "By respondent age",
+       x = "Respondent age (yrs since 18)",
+       y = "Estimated marginal effect")
+```
+
+However, by observing the above line plot estimating the marginal effect of education by age, the results indicate that education's marginal effect is statistically significant after the age 48. After that point, education has a significant negative marginal effect, meaning a one year increase in a respondent's education is associated with between a .5 and 1.5 point decrease in their Biden thermometer value. This negative marginal effect is exacerbated as respondent age increases, moving to nearly a 3 point decrease in thermometer value for each year of education. In short, more education is associated with a negative view of Biden, but only for respondents older than 48.
