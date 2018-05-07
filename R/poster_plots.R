@@ -55,7 +55,7 @@ avg_complexity <- complexity %>%
   mutate(age = factor(age, levels = c(seq(14,58,4),'book')))
 
 
-ggplot(avg_complexity, aes(x = age, y = empirical_mean,
+ggplot(avg_complexity, aes(x = age, y = empirical_stat,
                        ymin = ci_lower, ymax = ci_upper,
                        color = source, fill = source,
                        group = source, label = source)) +
